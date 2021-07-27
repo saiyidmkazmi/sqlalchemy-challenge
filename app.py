@@ -6,9 +6,7 @@ from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine, func, inspect
 
-#################################################
-# Database Setup
-#################################################
+
 engine = create_engine("sqlite:///Resources/hawaii.sqlite", connect_args={'check_same_thread': False}, echo=True)
 # reflect an existing database into a new model
 Base = automap_base()
@@ -21,15 +19,10 @@ Station = Base.classes.station
 # Create our session (link) from Python to the DB
 session = Session(engine)
 
-#################################################
-# Flask Setup
-#################################################
+
 app = Flask(__name__)
 
 
-#################################################
-# Flask Routes
-#################################################
 
 @app.route("/")
 def welcome():
@@ -73,56 +66,52 @@ def welcome():
 
 @app.route("/api/v1.0/precipitation")
 def precipitation():
-    # Docstring 
+
     """Return a list of precipitations from last year"""
-    # Design a query to retrieve the last 12 months of precipitation data and plot the results
+
     max_date = session.query(Measurement.date).order_by(Measurement.date.desc()).first()
 
-    # Get the first element of the tuple
+
     max_date = max_date[0]
 
-    # Calculate the date 1 year ago from today
-    # The days are equal 366 so that the first day of the year is included
+
     year_ago = dt.datetime.strptime(max_date, "%Y-%m-%d") - dt.timedelta(days=366)
     
-    # Perform a query to retrieve the data and precipitation scores
+
     results_precipitation = session.query(Measurement.date, Measurement.prcp).filter(Measurement.date >= year_ago).all()
 
-    # Convert list of tuples into normal list
+
     precipitation_dict = dict(results_precipitation)
 
     return jsonify(precipitation_dict)
 
 @app.route("/api/v1.0/stations")
 def stations(): 
-    # Docstring
+
     """Return a JSON list of stations from the dataset."""
-    # Query stations
+
     results_stations =  session.query(Measurement.station).group_by(Measurement.station).all()
 
-    # Convert list of tuples into normal list
+
     stations_list = list(np.ravel(results_stations))
 
     return jsonify(stations_list)
 
 @app.route("/api/v1.0/tobs")
 def tobs(): 
-    # Docstring
+
     """Return a JSON list of Temperature Observations (tobs) for the previous year."""
 
-    # Design a query to retrieve the last 12 months of precipitation data and plot the results
+
     max_date = session.query(Measurement.date).order_by(Measurement.date.desc()).first()
 
-    # Get the first element of the tuple
     max_date = max_date[0]
 
-    # Calculate the date 1 year ago from today
-    # The days are equal 366 so that the first day of the year is included
     year_ago = dt.datetime.strptime(max_date, "%Y-%m-%d") - dt.timedelta(days=366)
-    # Query tobs
+s
     results_tobs = session.query(Measurement.date, Measurement.tobs).filter(Measurement.date >= year_ago).all()
 
-    # Convert list of tuples into normal list
+
     tobs_list = list(results_tobs)
 
     return jsonify(tobs_list)
